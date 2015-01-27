@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.classtimer.Bus.BusProvider;
 import com.example.classtimer.Calculus.CalendarObject;
@@ -21,6 +22,7 @@ import java.util.List;
 public class NotifService extends Service {
     NotificationManager nm;
     String Tag = "faggot";
+    static String time ;
 
 
 
@@ -36,6 +38,7 @@ public class NotifService extends Service {
         Log.d(Tag,"start Service");
         return START_STICKY;
     }
+
 
     @Override
     public void onDestroy() {
@@ -73,11 +76,15 @@ public class NotifService extends Service {
 
         return output;
     }
-
+    @Subscribe
+    public void onStopService(StopService event){
+        stopSelf();
+  }
     @Subscribe
     public void onCalendarObject(CalendarObject event) {
-        sendNotif();
+
 StimeCalcul(SbackTimeList(event.getHour(),event.getMinute(),event.getQuant()));
+        sendNotif();
     }
     public void StimeCalcul(final List<Calendar> list)
     //вычисление и подача сигнала сервису уведомленя
@@ -95,12 +102,14 @@ Log.d(Tag,"list size == 0");
             Calendar myDate = Calendar.getInstance();
 
             final long ch = list.get(0).getTimeInMillis() - myDate.getTimeInMillis();
+            BusProvider.getInstance().post(new com.example.classtimer.Activity.CountDownTimer(list.get(0)));
+            Log.d(Tag,"calculnew"+ list.get(0).getTime().toString());
+            time = formatTime(ch);
 
 
             new CountDownTimer(ch, 1000) {
 
                 public void onTick(long millisUntilFinished) {
-                    Log.d(Tag,"timecacluc progress" + formatTime(millisUntilFinished));
 
 
                 }
@@ -141,21 +150,28 @@ Log.d(Tag,"list size == 0");
         for (int i = 0; i < mquant; i++) { //add alarm_time in  list
 
 
+            mcalSet.add(Calendar.MINUTE, +45);
+            quasi_date.add((Calendar) mcalSet.clone());
+            Log.d(Tag,quasi_date.get(quasi_date.size()-1).getTime().toString());
+
             mcalSet.add(Calendar.MINUTE, +5);
 
             quasi_date.add((Calendar) mcalSet.clone());
-            mcalSet.add(Calendar.MINUTE, +1);
+            Log.d(Tag,quasi_date.get(quasi_date.size()-1).getTime().toString());
 
-            quasi_date.add((Calendar) mcalSet.clone());
-            mcalSet.add(Calendar.MINUTE, +5);
+            mcalSet.add(Calendar.MINUTE, +45);
+            Log.d(Tag,quasi_date.get(quasi_date.size()-1).getTime().toString());
+
 
             quasi_date.add((Calendar) mcalSet.clone());
             if (i < mquant - 1) { //add large break time
-                mcalSet.add(Calendar.MINUTE, +2);
+                mcalSet.add(Calendar.MINUTE, + 10);
 
                 quasi_date.add((Calendar) mcalSet.clone());
 
             }
+            Log.d(Tag,quasi_date.get(quasi_date.size()-1).getTime().toString());
+
 
 
         }
@@ -163,8 +179,11 @@ Log.d(Tag,"list size == 0");
 
         int i = 0;
         while (i < quasi_date.size()) {
-            if (mcalNow.compareTo(quasi_date.get(0)) < 0) {
+            if (mcalNow.compareTo(quasi_date.get(0)) > 0) {
                 quasi_date.remove(0);
+                Log.d(Tag,"mclanow" + mcalNow.compareTo(quasi_date.get(0)));
+                Log.d(Tag," time cut" +  quasi_date.get(quasi_date.size()-1).getTime().toString());
+
                 i++;
             } else {
                 break;
@@ -186,7 +205,7 @@ Log.d(Tag,"list size == 0");
         PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
 
-        notif.setLatestEventInfo(this, "Ding, dong, bell))", "Звонок ", pIntent);
+        notif.setLatestEventInfo(this, "Ding, dong, bell))", "До следующего звонка осталось " + time, pIntent);
 
         notif.flags |= Notification.FLAG_AUTO_CANCEL;
 

@@ -16,7 +16,7 @@ public class BusProvider {
     public static Bus getInstance() {
 
         if (mBus == null) {
-            mBus = new Bus(ThreadEnforcer.MAIN);
+            mBus = new Bus(ThreadEnforcer.ANY);
         }
 
         return mBus;
