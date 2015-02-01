@@ -3,9 +3,11 @@ package com.example.classtimer.Activity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.Service;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.os.CountDownTimer;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -20,6 +22,7 @@ import com.example.classtimer.Bus.BusProvider;
 import com.example.classtimer.Calculus.CalendarObject;
 import com.example.classtimer.R;
 import com.example.classtimer.Service.NotifService;
+import com.example.classtimer.Service.ServiceStart;
 import com.example.classtimer.Service.StopService;
 import com.squareup.otto.Subscribe;
 
@@ -162,10 +165,12 @@ public class MainActivity extends Activity {
     };
 
     public void Startbt(View v) {//Start button я понял
+        stopService(new Intent(this, NotifService.class));
+        startService(new Intent(this, NotifService.class));
         btStop.setVisibility(View.VISIBLE);
         btStart.setVisibility(View.INVISIBLE);
+        tvTimerTime.setText("");
         tvTimerTime.setVisibility(View.VISIBLE);
-        tvTimerTime.clearComposingText();
         quant = lessonNum;
         hour = myHour;
         minute = myMinute;
@@ -188,7 +193,7 @@ public class MainActivity extends Activity {
             }
 
             public void onFinish() {
-                tvTimerTime.clearComposingText();
+                tvTimerTime.setText("");
 
 
             }
@@ -208,9 +213,19 @@ public class MainActivity extends Activity {
 
     public void Stopbt(View view) {
         BusProvider.getInstance().post(new StopService("Stop calculation"));
-        Intent intent = getIntent();
-        finish();
-        startActivity(intent);
+        startService(new Intent(this, NotifService.class));
+        if (Build.VERSION.SDK_INT >= 11) {
+            recreate();
+        } else {
+            Intent intent = getIntent();
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            finish();
+            overridePendingTransition(0, 0);
+
+            startActivity(intent);
+            overridePendingTransition(0, 0);
+        }
+
 
     }
 }

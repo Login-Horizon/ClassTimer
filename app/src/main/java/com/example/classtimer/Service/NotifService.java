@@ -5,6 +5,9 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.util.Log;
@@ -22,8 +25,7 @@ import java.util.List;
 public class NotifService extends Service {
     NotificationManager nm;
     String Tag = "faggot";
-    static String time ;
-
+    static String time;
 
 
     @Override
@@ -35,7 +37,7 @@ public class NotifService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(Tag,"start Service");
+        Log.d(Tag, "start Service");
         return START_STICKY;
     }
 
@@ -44,11 +46,10 @@ public class NotifService extends Service {
     public void onDestroy() {
         super.onDestroy();
         BusProvider.getInstance().unregister(this);
-        Log.d(Tag,"destroy service");
+        Log.d(Tag, "destroy service");
     }
-    static   public String formatTime(long millis)
-    {
 
+    static public String formatTime(long millis) {
 
 
         String output = "";
@@ -76,16 +77,20 @@ public class NotifService extends Service {
 
         return output;
     }
+
     @Subscribe
-    public void onStopService(StopService event){
+    public void onStopService(StopService event) {
+        cancelnotif();
         stopSelf();
-  }
+    }
+
     @Subscribe
     public void onCalendarObject(CalendarObject event) {
 
-StimeCalcul(SbackTimeList(event.getHour(),event.getMinute(),event.getQuant()));
-        sendNotif();
+        StimeCalcul(SbackTimeList(event.getHour(), event.getMinute(), event.getQuant()));
+
     }
+
     public void StimeCalcul(final List<Calendar> list)
     //вычисление и подача сигнала сервису уведомленя
     {
@@ -94,16 +99,15 @@ StimeCalcul(SbackTimeList(event.getHour(),event.getMinute(),event.getQuant()));
         if (list.size() == 0)// проблемная зона , эта часть если закоменнтировать то раблтает
         // если даже лист присвоит null все равно не раблотает вылетает с фатал еррором
         {
-Log.d(Tag,"list size == 0");
+            Log.d(Tag, "list size == 0");
 
 
         } else {
-            sendNotif();
             Calendar myDate = Calendar.getInstance();
 
             final long ch = list.get(0).getTimeInMillis() - myDate.getTimeInMillis();
             BusProvider.getInstance().post(new com.example.classtimer.Activity.CountDownTimer(list.get(0)));
-            Log.d(Tag,"calculnew"+ list.get(0).getTime().toString());
+            Log.d(Tag, "calculnew" + list.get(0).getTime().toString());
             time = formatTime(ch);
 
 
@@ -115,7 +119,7 @@ Log.d(Tag,"list size == 0");
                 }
 
                 public void onFinish() {
-                    Log.d(Tag,"timecaclys finish");
+                    Log.d(Tag, "timecaclys finish");
 
                     sendNotif();
                     //класс для возврата из уведомления в основной активити (реализован: скоро покажу)
@@ -127,8 +131,9 @@ Log.d(Tag,"list size == 0");
 
         }
     }
+
     public List<Calendar> SbackTimeList(int sethours, int setminute, int mquant) {
-        Log.d(Tag,"calendar start");
+        Log.d(Tag, "calendar start");
         Calendar mcalNow = Calendar.getInstance();
         Calendar mcalSet = (Calendar) mcalNow.clone();
 
@@ -152,26 +157,25 @@ Log.d(Tag,"list size == 0");
 
             mcalSet.add(Calendar.MINUTE, +45);
             quasi_date.add((Calendar) mcalSet.clone());
-            Log.d(Tag,quasi_date.get(quasi_date.size()-1).getTime().toString());
+            Log.d(Tag, quasi_date.get(quasi_date.size() - 1).getTime().toString());
 
             mcalSet.add(Calendar.MINUTE, +5);
 
             quasi_date.add((Calendar) mcalSet.clone());
-            Log.d(Tag,quasi_date.get(quasi_date.size()-1).getTime().toString());
+            Log.d(Tag, quasi_date.get(quasi_date.size() - 1).getTime().toString());
 
             mcalSet.add(Calendar.MINUTE, +45);
-            Log.d(Tag,quasi_date.get(quasi_date.size()-1).getTime().toString());
+            Log.d(Tag, quasi_date.get(quasi_date.size() - 1).getTime().toString());
 
 
             quasi_date.add((Calendar) mcalSet.clone());
             if (i < mquant - 1) { //add large break time
-                mcalSet.add(Calendar.MINUTE, + 10);
+                mcalSet.add(Calendar.MINUTE, +10);
 
                 quasi_date.add((Calendar) mcalSet.clone());
 
             }
-            Log.d(Tag,quasi_date.get(quasi_date.size()-1).getTime().toString());
-
+            Log.d(Tag, quasi_date.get(quasi_date.size() - 1).getTime().toString());
 
 
         }
@@ -181,8 +185,8 @@ Log.d(Tag,"list size == 0");
         while (i < quasi_date.size()) {
             if (mcalNow.compareTo(quasi_date.get(0)) > 0) {
                 quasi_date.remove(0);
-                Log.d(Tag,"mclanow" + mcalNow.compareTo(quasi_date.get(0)));
-                Log.d(Tag," time cut" +  quasi_date.get(quasi_date.size()-1).getTime().toString());
+                Log.d(Tag, "mclanow" + mcalNow.compareTo(quasi_date.get(0)));
+                Log.d(Tag, " time cut" + quasi_date.get(quasi_date.size() - 1).getTime().toString());
 
                 i++;
             } else {
@@ -194,26 +198,36 @@ Log.d(Tag,"list size == 0");
 
 
     }
+
     void sendNotif() {
 
-        Notification notif = new Notification(R.drawable.ic_launcher, "Time",
-                System.currentTimeMillis());
+        Notification.Builder builder = new Notification.Builder(getApplicationContext());
+
 
         Intent intent = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
                 .setComponent(getPackageManager().getLaunchIntentForPackage(getPackageName()).getComponent());
 
-        PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, 0);
+        PendingIntent pIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        builder
+                .setContentIntent(pIntent)
+                .setSmallIcon(R.drawable.timer)
+                .setLargeIcon(BitmapFactory.decodeResource(getApplicationContext().getResources(), R.drawable.timer))
+                .setTicker("Timer ")
+                .setWhen(System.currentTimeMillis())
+                .setAutoCancel(true)
+                .setContentTitle("Class Timer")
+                .setContentText("Until the next call :" + time);
+        Notification notification = builder.build();
+        notification.defaults = Notification.DEFAULT_ALL;
+        notification.sound = Uri.parse("android.resource://com.example.classtimer"+R.raw.cloc);
 
 
-        notif.setLatestEventInfo(this, "Ding, dong, bell))", "До следующего звонка осталось " + time, pIntent);
-
-        notif.flags |= Notification.FLAG_AUTO_CANCEL;
-
-
-        nm.notify(1, notif);
-
-
+        nm.notify(1, notification);
     }
+    public void cancelnotif(){
+        nm.cancel(1);
+    }
+
     @Override
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.

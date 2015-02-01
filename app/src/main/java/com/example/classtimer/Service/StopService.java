@@ -5,10 +5,12 @@ package com.example.classtimer.Service;
  */
 public class StopService {
     private String text;
-    public  StopService(String text){
+
+    public StopService(String text) {
         this.text = text;
     }
-    public String getText(){
+
+    public String getText() {
         return text;
     }
 
