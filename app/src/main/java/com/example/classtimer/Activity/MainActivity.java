@@ -35,7 +35,7 @@ public class MainActivity extends Activity {
 
     static int lessonNum = 3;
     static int myHour = 13;
-    static int myMinute = 45;
+    static int myMinute = 46;
     Button btStart;
     Button btStop;
     TextView tvTimerTime;
