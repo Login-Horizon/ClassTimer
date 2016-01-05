@@ -29,13 +29,13 @@ import com.squareup.otto.Subscribe;
 import java.util.Calendar;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity {us
 
     int hour, minute, quant;
 
     static int lessonNum = 3;
     static int myHour = 13;
-    static int myMinute = 45;
+    static int myMinute = 46;
     Button btStart;
     Button btStop;
     TextView tvTimerTime;
